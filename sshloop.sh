@@ -1,4 +1,14 @@
 #!/bin/bash
+
+# This is a fairly simple BASH script to iterate through either a full subnet or a
+# single host via SSH and execute a command. All output of the command is always
+# logged to /tmp/sshloop.log and opened in 'less' as the final step, allowing one
+# to immediately review the command result.
+
+# Licence: BSD (3-Clause) License
+# Author:  justin@em.ails.us
+# Source:  https://github.com/thesysadm/sysadm_scripts
+
 #
 # set up some vars
 ## var1: input Subnet
