@@ -1,0 +1,24 @@
+#!/bin/bash
+
+function myHelp() {
+  printf "__Help__\n"
+  printf "  Requires a user:\t-u \$USER\n"
+  printf "  Requires a host:\t-h \$HOST\n"
+  printf "  Optional a domain:\t-D \$DOMAIN\n\n"
+}
+
+while getopts "u:d:h:" option; do
+  case "${option}" in
+    u) myUser=${OPTARG};;
+    d) myDomain=${OPTARG};;
+    h) myHost=${OPTARG};;
+    *) myHelp;;
+  esac
+done
+
+if [ -n "$myUser" ]; then
+  xfreerdp /size:1600x900 /cert-ignore +clipboard /drive:Z,/home/justin /sound:sys:alsa /multimedia:sys:alsa /d:$myDomain /u:$myUser /v:$myHost
+else
+  myHelp
+fi
+
