@@ -113,7 +113,6 @@ if ($ans -eq "Y" -or $ans -eq "y") {
 
 
   # Clean up temp files
-  del c:\temp\download.csv
   del c:\temp\vmwareSystems.csv
 
 
