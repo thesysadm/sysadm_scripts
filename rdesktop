@@ -1,5 +1,7 @@
 #!/bin/bash
 
+myScreenSize="1440x768"
+
 function myHelp() {
   printf "__Help__\n"
   printf "  Requires a user:\t-u \$USER\n"
@@ -17,7 +19,7 @@ while getopts "u:d:h:" option; do
 done
 
 if [ -n "$myUser" ]; then
-  xfreerdp /size:1600x900 /cert-ignore +clipboard /drive:Z,/home/justin /sound:sys:alsa /multimedia:sys:alsa /d:$myDomain /u:$myUser /v:$myHost
+  xfreerdp /size:${myScreenSize} /cert-ignore +clipboard /drive:Z,/home/${USER} /sound:sys:alsa /multimedia:sys:alsa /d:${myDomain} /u:${myUser} /v:${myHost}
 else
   myHelp
 fi
