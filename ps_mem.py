@@ -36,7 +36,7 @@
 #                           Patch from patrice.bouchand.fedora@gmail.com
 # V1.9      20 Feb 2008     Fix invalid values reported when PSS is available.
 #                           Reported by Andrey Borzenkov <arvidjaar@mail.ru>
-# V3.2      01 Mar 2014
+# V3.1      10 May 2013
 #   http://github.com/pixelb/scripts/commits/master/scripts/ps_mem.py
 
 # Notes:
@@ -129,7 +129,6 @@ class Proc:
             if (val.errno == errno.ENOENT or # kernel thread or process gone
                 val.errno == errno.EPERM):
                 raise LookupError
-            raise
 
 proc = Proc()
 
@@ -140,8 +139,8 @@ proc = Proc()
 
 def parse_options():
     try:
-        long_options = ['split-args', 'help', 'total']
-        opts, args = getopt.getopt(sys.argv[1:], "shtp:w:", long_options)
+        long_options = ['split-args', 'help']
+        opts, args = getopt.getopt(sys.argv[1:], "shp:w:", long_options)
     except getopt.GetoptError:
         sys.stderr.write(help())
         sys.exit(3)
@@ -150,13 +149,10 @@ def parse_options():
     split_args = False
     pids_to_show = None
     watch = None
-    only_total = False
 
     for o, a in opts:
         if o in ('-s', '--split-args'):
             split_args = True
-        if o in ('-t', '--total'):
-            only_total = True
         if o in ('-h', '--help'):
             sys.stdout.write(help())
             sys.exit(0)
@@ -173,16 +169,14 @@ def parse_options():
                 sys.stderr.write(help())
                 sys.exit(3)
 
-    return (split_args, pids_to_show, watch, only_total)
+    return (split_args, pids_to_show, watch)
 
 def help():
     help_msg = 'ps_mem.py - Show process memory usage\n'\
     '\n'\
     '-h                                 Show this help\n'\
     '-w <N>                             Measure and show process memory every N seconds\n'\
-    '-p <pid>[,pid2,...pidN]            Only show memory usage PIDs in the specified list\n' \
-    '-s, --split-args                   Show and separate by, all command line arguments\n' \
-    '-t, --total                        Show only the total value\n'
+    '-p <pid>[,pid2,...pidN]            Only show memory usage PIDs in the specified list\n'
 
     return help_msg
 
@@ -260,7 +254,6 @@ def getCmdName(pid, split_args):
         if (val.errno == errno.ENOENT or # either kernel thread or process gone
             val.errno == errno.EPERM):
             raise LookupError
-        raise
 
     if split_args:
         return " ".join(cmdline)
@@ -330,30 +323,27 @@ def shared_val_accuracy():
     else:
         return 1
 
-def show_shared_val_accuracy( possible_inacc, only_total=False ):
-    level = ("Warning","Error")[only_total]
+def show_shared_val_accuracy( possible_inacc ):
     if possible_inacc == -1:
         sys.stderr.write(
-         "%s: Shared memory is not reported by this system.\n" % level
+         "Warning: Shared memory is not reported by this system.\n"
         )
         sys.stderr.write(
          "Values reported will be too large, and totals are not reported\n"
         )
     elif possible_inacc == 0:
         sys.stderr.write(
-         "%s: Shared memory is not reported accurately by this system.\n" % level
+         "Warning: Shared memory is not reported accurately by this system.\n"
         )
         sys.stderr.write(
          "Values reported could be too large, and totals are not reported\n"
         )
     elif possible_inacc == 1:
         sys.stderr.write(
-         "%s: Shared memory is slightly over-estimated by this system\n"
-         "for each program, so totals are not reported.\n" % level
+         "Warning: Shared memory is slightly over-estimated by this system\n"
+         "for each program, so totals are not reported.\n"
         )
     sys.stderr.close()
-    if only_total and possible_inacc != 2:
-        sys.exit(1)
 
 def get_memory_usage( pids_to_show, split_args, include_self=False, only_self=False ):
     cmds = {}
@@ -376,7 +366,7 @@ def get_memory_usage( pids_to_show, split_args, include_self=False, only_self=Fa
         try:
             cmd = getCmdName(pid, split_args)
         except LookupError:
-            #operation not permitted
+            #permission denied or
             #kernel threads don't have exe links or
             #process gone
             continue
@@ -418,7 +408,7 @@ def get_memory_usage( pids_to_show, split_args, include_self=False, only_self=Fa
     return sorted_cmds, shareds, count, total
 
 def print_header():
-    sys.stdout.write(" Private  +   Shared  =  RAM used\tProgram\n\n")
+    sys.stdout.write(" Private  +   Shared  =  RAM used\tProgram \n\n")
 
 def print_memory_usage(sorted_cmds, shareds, count, total):
     for cmd in sorted_cmds:
@@ -451,20 +441,16 @@ def verify_environment():
 
 if __name__ == '__main__':
     verify_environment()
-    split_args, pids_to_show, watch, only_total = parse_options()
+    split_args, pids_to_show, watch = parse_options()
 
-    if not only_total:
-        print_header()
+    print_header()
 
     if watch is not None:
         try:
             sorted_cmds = True
             while sorted_cmds:
                 sorted_cmds, shareds, count, total = get_memory_usage( pids_to_show, split_args )
-                if only_total and have_pss:
-                    sys.stdout.write(human(total).replace(' ','')+'B\n')
-                elif not only_total:
-                    print_memory_usage(sorted_cmds, shareds, count, total)
+                print_memory_usage(sorted_cmds, shareds, count, total)
                 time.sleep(watch)
             else:
                 sys.stdout.write('Process does not exist anymore.\n')
@@ -473,10 +459,8 @@ if __name__ == '__main__':
     else:
         # This is the default behavior
         sorted_cmds, shareds, count, total = get_memory_usage( pids_to_show, split_args )
-        if only_total and have_pss:
-            sys.stdout.write(human(total).replace(' ','')+'B\n')
-        elif not only_total:
-            print_memory_usage(sorted_cmds, shareds, count, total)
+        print_memory_usage(sorted_cmds, shareds, count, total)
+
 
     # We must close explicitly, so that any EPIPE exception
     # is handled by our excepthook, rather than the default
@@ -484,4 +468,5 @@ if __name__ == '__main__':
     sys.stdout.close()
 
     vm_accuracy = shared_val_accuracy()
-    show_shared_val_accuracy( vm_accuracy, only_total )
+    show_shared_val_accuracy( vm_accuracy )
+
