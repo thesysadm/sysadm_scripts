@@ -2,7 +2,7 @@
 
 # This is a fairly simple BASH script to iterate through either a full subnet or a
 # single host via SSH and execute a command. All output of the command is always
-# logged to /tmp/sshloop.log and opened in 'less' as the final step, allowing one
+# logged to /tmp/sshloop.$DATE.log and opened in 'less' as the final step, allowing one
 # to immediately review the command result.
 
 # Licence: BSD (3-Clause) License
@@ -17,6 +17,9 @@ tmpSubnet=$1
 strSSHCmd=$2
 ## array which $tmpSubnet is converted to
 arrSubnet=()
+## log file
+myLog=/tmp/sshloop.`date +%Y%m%d-%H%M`.log
+
 
 #
 # Check for some sort of data in both vars and, if not, print out the help
@@ -26,7 +29,7 @@ if [ "$strSSHCmd" == "" ]; then
   printf "#################################################################################\n"
   printf "This is a fairly simple BASH script to iterate through either a full subnet or a\n"
   printf "single host via SSH and execute a command. All output of the command is always\n"
-  printf "logged to /tmp/sshloop.log and opened in 'less' as the final step, allowing one\n"
+  printf "logged to /tmp/sshloop.$DATE.log and opened in 'less' as the final step, allowing one\n"
   printf "to immediately review the command result.\n\n"
 
   printf "SSHLoop executes using these SSH parameters:\n"
@@ -78,17 +81,17 @@ printf "########################################################################
 # Do the SSH magic!
 #
 # Try to discern if running command on either a single server or across a subnet
-## Wipe the log file
-rm -f /tmp/sshloop.log
+printf "Logging to file '${myLog}'.\n"
+
 if [ $intLoopCntMax = 0 ]; then
   ## Script thinks this is a single server
   ### Write the log
-  printf "Connecting:\t$tmpSubnet\n" >> /tmp/sshloop.log
-  printf "CMD output:\t" >> /tmp/sshloop.log
+  printf "Connecting:\t$tmpSubnet\n" >> $myLog
+  printf "CMD output:\t" >> $myLog
   ### SSH and execute the command
-  ssh -q -oBatchMode=yes -oStrictHostKeyChecking=no -oConnectTimeout=1 -oUserKnownHostsFile=/dev/null $tmpSubnet "$strSSHCmd" &>> /tmp/sshloop.log
+  ssh -q -oBatchMode=yes -oStrictHostKeyChecking=no -oConnectTimeout=1 -oUserKnownHostsFile=/dev/null $tmpSubnet "$strSSHCmd" &>> $myLog
   ### Finish the log entry line
-  printf "\n\n" >> /tmp/sshloop.log
+  printf "\n\n" >> $myLog
 
 else
   ## Script thinks this is a /24 or /23 subnet
@@ -99,12 +102,12 @@ else
     ### Counter from 0 to 255 for the IP's last octet
     for IP in {0..255}; do
       ### Write the log
-      printf "Connecting:\t${arrSubnet[0]}.${arrSubnet[1]}.${arrSubnet[2]}.$IP\n" >> /tmp/sshloop.log
-      printf "CMD output:\t" >> /tmp/sshloop.log
+      printf "Connecting:\t${arrSubnet[0]}.${arrSubnet[1]}.${arrSubnet[2]}.$IP\n" >> $myLog
+      printf "CMD output:\t" >> $myLog
       ### SSH and execute the command
-      ssh -q -oBatchMode=yes -oStrictHostKeyChecking=no -oConnectTimeout=1 -oUserKnownHostsFile=/dev/null ${arrSubnet[0]}.${arrSubnet[1]}.${arrSubnet[2]}.$IP "$strSSHCmd" &>> /tmp/sshloop.log
+      ssh -q -oBatchMode=yes -oStrictHostKeyChecking=no -oConnectTimeout=1 -oUserKnownHostsFile=/dev/null ${arrSubnet[0]}.${arrSubnet[1]}.${arrSubnet[2]}.$IP "$strSSHCmd" &>> $myLog
       ### Finish the log entry line
-      printf "\n\n" >> /tmp/sshloop.log
+      printf "\n\n" >> $myLog
     done
     # Increment loop counter
     let intLoopCnt=intLoopCnt+1
@@ -116,7 +119,7 @@ fi
 
 #
 # Open log file in a 'less' process for review
-less /tmp/sshloop.log
+less $myLog
 
 exit 0
 #EOF
