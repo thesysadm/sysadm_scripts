@@ -25,7 +25,7 @@ $thisexcuse = $excuse[ (rand(1000)*$$)%($number+1) ];
 print "Content-type: text/html\n";
 print "\n";
 print "<title>\"Bastard Operator From Hell\"-Style Excuses</title>\n";
-print "<center><font size = \"+2\">The \"Bastard Operator From Hell\"-style excuse generator.</font>";
+print "<center><font size = \"+2\">The \"BOFH\"-style excuse generator.</font>";
 print "<br><br><hr><br>";
 print "The cause of the problem is:<br>";
 print "<font size = \"+2\">";
