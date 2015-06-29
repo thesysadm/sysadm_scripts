@@ -8,7 +8,7 @@
 ##
 
 # Open the excuses file and grab one at "random".
-open(F, "/srv/http/vhosts/sysadm.pw/bofh/excuses") or die "Content-type: text/html\n\nAck...can't read the excuse file! Don't expect the rest to work.\n";
+open(F, "excuses") or die "Content-type: text/html\n\nAck...can't read the excuse file! Don't expect the rest to work.\n";
 
 srand(time);
 
