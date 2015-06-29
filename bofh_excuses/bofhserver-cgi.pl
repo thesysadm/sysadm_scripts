@@ -4,11 +4,11 @@
 # (c) 1994-2000 Jeff Ballard.
 #
 ##
-## Modified by J Tianen 20150629
+## First modified 20150629 by Justin Tianen
 ##
 
 # Open the excuses file and grab one at "random".
-open(F, "excuses") or die "Content-type: text/html\n\nAck...can't read the excuse file! Don't expect the rest to work.\n";
+open(F, "bofhserver-cgi_excuses.txt") or die "Content-type: text/html\n\nAck...can't read the excuse file! Don't expect the rest to work.\n";
 
 srand(time);
 
