@@ -105,7 +105,7 @@ else
       printf "Connecting:\t${arrSubnet[0]}.${arrSubnet[1]}.${arrSubnet[2]}.$IP\n" >> $myLog
       printf "CMD output:\t" >> $myLog
       ### SSH and execute the command
-      ssh -q -oBatchMode=yes -oStrictHostKeyChecking=no -oConnectTimeout=1 -oUserKnownHostsFile=/dev/null ${arrSubnet[0]}.${arrSubnet[1]}.${arrSubnet[2]}.$IP "$strSSHCmd" &>> $myLog
+      ssh -t -q -oBatchMode=yes -oStrictHostKeyChecking=no -oConnectTimeout=1 -oUserKnownHostsFile=/dev/null ${arrSubnet[0]}.${arrSubnet[1]}.${arrSubnet[2]}.$IP "$strSSHCmd" &>> $myLog
       ### Finish the log entry line
       printf "\n\n" >> $myLog
     done
